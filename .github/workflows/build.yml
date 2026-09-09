@@ -4,26 +4,16 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Build APK with Official Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          python-python-version: '3.10'
-
-      - name: Install Buildozer and Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake
-          pip install --upgrade pip
-          pip install buildozer kivy cython
-
-      - name: Build APK with Buildozer
-        run: |
-          yes | buildozer android debug
+          command: buildozer android debug
+          repository_root: .
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
