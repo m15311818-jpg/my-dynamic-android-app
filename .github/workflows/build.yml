@@ -21,11 +21,10 @@ jobs:
 
       - name: Create Lightning Fast WebView App
         run: |
-          # بناء تطبيق أندرويد ويب مدمج في ثوانٍ معدودة بدون أدوات ثقيلة
           cordova create myapp org.test.dynamicapp "My Dynamic App"
           cd myapp
           cordova platform add android
-          # نسخ الرابط الخاص بك مباشرة في قلب التطبيق
+          # 🎯 تم وضع رابط حسابك الصحيح هنا مباشرة
           echo '<meta http-equiv="refresh" content="0;url=https://github.io">' > www/index.html
           cordova build android --debug
 
