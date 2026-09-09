@@ -5,7 +5,10 @@ package.domain = org.test
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-requirements = python3,kivy,android,pyjnius
+
+# 🎯Requirements خفيفة جداً بدون أي مكتبات جافا خارجية
+requirements = python3,kivy,android
+
 orientation = portrait
 fullscreen = 1
 android.permissions = INTERNET
