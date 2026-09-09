@@ -25,22 +25,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev build-essential
 
-      - name: Install Stable Build Tools
+      - name: Install Stable Build Tools (Force Bypass)
         run: |
-          pip install --upgrade pip
-          pip install "cython<3.0.0" wheel
-          pip install "kivy>=2.2.0"
-          pip install git+https://github.com
-
-      - name: Generate Empty Buildozer To Force Accept Licenses
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          # الموافقة المسبقة على شروط جوجل للأندرويد
-          yes | buildozer android debug || true
+          python -m pip install --upgrade pip
+          # إجبار النظام على التثبيت وتخطي قيود الأمان لجيتهاب
+          pip install --break-system-packages "cython<3.0.0" wheel "kivy>=2.2.0" buildozer
 
       - name: Clean and Build Final APK
         run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
           buildozer clean
           yes | buildozer android debug
 
