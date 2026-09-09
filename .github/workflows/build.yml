@@ -24,8 +24,11 @@ jobs:
           cordova create myapp org.test.dynamicapp "My Dynamic App"
           cd myapp
           cordova platform add android
-          # 🎯 تم وضع رابط حسابك الصحيح هنا مباشرة
-          echo '<meta http-equiv="refresh" content="0;url=https://github.io">' > www/index.html
+          
+          # 🎯 التعديل الذهبي: حقن رابط صفحتك الزرقاء مباشرة في ملف الإعدادات الأصلي للتطبيق
+          # هذا يجبر نظام الأندرويد على فتح صفحتك فوراً كأنها قلب التطبيق بدون وسيط
+          sed -i 's|<content src="index.html" />|<content src="https://github.io" /><allow-navigation href="*" />|g' config.xml
+          
           cordova build android --debug
 
       - name: Upload APK Artifact
