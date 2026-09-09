@@ -1,10 +1,10 @@
-name: Build Fast Python APK
+name: Build Dynamic Android APK
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -12,27 +12,88 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Pure Android Compilers
+      - name: Setup Android Command Line Tools
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev build-essential || true
-          python -m pip install --upgrade pip
-          pip install --break-system-packages "cython<3.0.0" wheel "kivy>=2.2.0" buildozer
+          mkdir -p android-sdk/cmdline-tools
+          cd android-sdk/cmdline-tools
+          wget https://google.com
+          unzip commandlinetools-linux-9477386_latest.zip
+          mv cmdline-tools latest
+          cd ../..
+          export ANDROID_HOME=$PWD/android-sdk
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+          yes | sdkmanager --licenses
 
-      - name: Build Direct Android APK
+      - name: Create Native WebView Code
         run: |
-          yes | buildozer android debug
+          # بناء هيكل تطبيق أندرويد حقيقي وصغير جداً في ثوانٍ
+          mkdir -p app/src/main/java/com/dynamic/app
+          mkdir -p app/src/main/res/layout
+          
+          # 1. ملف الـ Manifest
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <manifest xmlns:android="http://android.com" package="com.dynamic.app">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:label="My Dynamic App">
+                  <activity android:name=".MainActivity" android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 2. كود الجافا الصافي لفتح رابطك مباشرة
+          cat << 'EOF' > app/src/main/java/com/dynamic/app/MainActivity.java
+          package com.dynamic.app;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  WebView webView = new WebView(this);
+                  webView.getSettings().setJavaScriptEnabled(true);
+                  webView.setWebViewClient(new WebViewClient());
+                  // 🔗 رابط التحكم السحري بتاعك محقون جوه السيستم
+                  webView.loadUrl("https://github.io");
+                  setContentView(webView);
+              }
+          }
+          EOF
+
+          # 3. ملف البناء المستقر والمضمون
+          cat << 'EOF' > build.gradle
+          plugins { id 'com.android.application' version '8.1.0' }
+          android {
+              namespace 'com.dynamic.app'
+              compileSdk 33
+              defaultConfig { applicationId "com.dynamic.app"; minSdk 21; targetSdk 33; versionCode 1; versionName "1.0" }
+          }
+          EOF
+          
+          cat << 'EOF' > settings.gradle
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+          include ':app'
+          EOF
+
+      - name: Build Android APK with Gradle
+        run: |
+          wget https://gradle.org
+          unzip gradle-8.1.1-bin.zip
+          ./gradle-8.1.1/bin/gradle assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: bin/*.apk
+          path: app/build/outputs/apk/debug/*.apk
