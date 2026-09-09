@@ -1,10 +1,10 @@
-name: Build Android APK
+name: Build Fast Android APK
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -15,33 +15,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🎯 تفعيل الذاكرة المؤقتة الذكية لتسريع البناء إلى دقيقة واحدة في حال الإعادة
-      - name: Cache Android SDK and Build Tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.buildozer
-            .buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-          restore-keys: |
-            ${{ runner.os }}-buildozer-
-
-      - name: Install System Dependencies
+      - name: Install Native Android Micro-Packager
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev build-essential || true
-          python -m pip install --upgrade pip
-          pip install --break-system-packages "cython<3.0.0" wheel "kivy>=2.2.0" buildozer
+          npm install -g native-run cordova
 
-      - name: Build Android APK
+      - name: Create Lightning Fast WebView App
         run: |
-          # إجبار جافا وأندرويد على قبول التراخيص وبدء البناء المستقر
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | buildozer android debug
+          # بناء تطبيق أندرويد ويب مدمج في ثوانٍ معدودة بدون أدوات ثقيلة
+          cordova create myapp org.test.dynamicapp "My Dynamic App"
+          cd myapp
+          cordova platform add android
+          # نسخ الرابط الخاص بك مباشرة في قلب التطبيق
+          echo '<meta http-equiv="refresh" content="0;url=https://github.io">' > www/index.html
+          cordova build android --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: bin/*.apk
+          path: myapp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
