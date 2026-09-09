@@ -1,17 +1,13 @@
 [app]
-title = My Dynamic App
-package.name = dynamicapp
-package.domain = org.test
+title = Neon Piano Pro
+package.name = neonpianopro
+package.domain = org.neonpiano
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
-version = 0.1
-
-# 🎯Requirements خفيفة جداً بدون أي مكتبات جافا خارجية
+version = 1.0
 requirements = python3,kivy,android
-
-orientation = portrait
+orientation = landscape
 fullscreen = 1
-android.permissions = INTERNET
 android.api = 33
 android.archs = arm64-v8a
 log_level = 2
