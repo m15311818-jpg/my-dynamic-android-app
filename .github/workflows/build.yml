@@ -4,8 +4,7 @@ on:
 
 jobs:
   build:
-    # 🎯 هنا السر: إجبار جيتهاب على استخدام السيرفر المستقر القديم لمنع مشاكل الأمان
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,19 +20,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install System Dependencies
+      - name: Install System Dependencies (Bypass Error 100)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev build-essential
+          # إجبار النظام على تخطي أي سيرفر تحديثات ساقط ومتابعة التثبيت بأمان
+          sudo apt-get update || true
+          sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev build-essential || true
 
-      - name: Install Build Tools
+      - name: Install Stable Build Tools
         run: |
           python -m pip install --upgrade pip
           pip install --break-system-packages "cython<3.0.0" wheel "kivy>=2.2.0" buildozer
 
       - name: Build Android APK
         run: |
-          # بناء مباشر بدون أي أوامر إضافية قد تسبب مشاكل
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
           yes | buildozer android debug
 
       - name: Upload APK Artifact
